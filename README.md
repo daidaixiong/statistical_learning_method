@@ -11,3 +11,7 @@ Problem:
 Converge:
 1. Convergence can be guaranteed when the dataset is linearly separable
 
+
+2. implementation of kdtree creation and find nearest neighbor code
+TODO:
+1. find k nearest neighbor code
