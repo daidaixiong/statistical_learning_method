@@ -82,6 +82,71 @@ def findNearestNeighbor(root, x):
                 search_path = np.append(search_path, [current_node.left])
     return dist, nearest_neighbor
 
+def findKNearestNeighbor(root, k, x):
+    res = [0]*k 
+    elementnum = 0
+
+    p = root
+    dim = p.current_node.shape[0]
+    search_path = list()
+    dist = np.finfo(np.float64()).max
+    nearest_neighbor = None
+    while p.current_node.size <> 0:
+        if (not p.left) and (not p.right):
+            current_dist = distance(p.current_node, x)
+            if current_dist < dist:
+                dist = current_dist
+                nearest_neighbor = p.current_node
+                print dist, p.current_node
+                res[elementnum] = (dist, (p.current_node))
+                elementnum += 1
+            break
+        search_path.append(p)
+        local_split = p.split % dim 
+        if x[local_split] < p.current_node[local_split]:
+            p = p.left
+        else:
+            p = p.right
+    search_path = np.array(search_path)
+    while search_path.size > 0:
+        #for item in search_path:
+        #    print 'yes', item.current_node,
+        #distance between the point x to the separate plane
+        current_node = search_path[-1]
+        search_path = search_path[:-1]
+        local_split = current_node.split % len(x)
+        dist_point_plane = x[local_split] - current_node.current_node[local_split]
+        dist = res[elementnum-1][0]
+        if dist_point_plane < dist or elementnum < k:
+            current_distance =  distance(current_node.current_node, x) 
+            # if the res is not full, insert current node
+            if elementnum < k or current_distance < dist:
+                local_index = elementnum-1
+                while local_index >= 0 and res[local_index][0] > current_distance:
+                    if local_index == k-1:
+                        local_index -= 1
+                        elementnum -= 1
+                        continue
+                    res[local_index+1] = res[local_index]
+                    local_index -= 1
+                res[local_index+1] = (current_distance, current_node.current_node)
+                elementnum += 1
+
+            if current_distance < dist:
+                dist = current_distance
+                nearest_neighbor = current_node.current_node
+            if (not current_node.left) and (not current_node.right):
+                continue
+        #    print 'abc', x[local_split], current_node.current_node
+        #    print x[local_split] <= current_node.current_node[local_split], local_split
+            if dist_point_plane < dist or elementnum < k:
+                if x[local_split] <= current_node.current_node[local_split]:
+                    np.append(search_path, [current_node.right])
+                else:
+                    search_path = np.append(search_path, [current_node.left])
+    return res
+    
+
 if __name__ == "__main__":
     datapoints = list() 
     datapoints = [(2,3), (5,4), (9,6), (4,7),(8,1),(7,2)] 
@@ -99,5 +164,8 @@ if __name__ == "__main__":
 
     root = buildKdtree(datapoints, 0)
     printKdtree(root)
-    res = findNearestNeighbor(root, (2, 4.5))
+    #find 1 nearest neighbor example
+    #res = findNearestNeighbor(root, (2, 4.5))
+    #find k nearest neighbor examples
+    res = findKNearestNeighbor(root, 2, (2, 4.5))
     print res
